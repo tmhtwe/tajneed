@@ -1,0 +1,536 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ijtema Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout concept: sticky search/filter command bar over a scrollable roster
+     list (Register), with a second tab (Report) showing live rollups —
+     the officer operates the top bar and scans the list; nothing below the
+     fold on first load needs scrolling to understand what the tool does. */
+  :root{
+    --paper:#FAF7F1; --card:#FFFFFF; --line:#E4DFD2;
+    --ink:#1D2A26; --ink-soft:#5C6B65;
+    --teal:#163B3F; --teal-2:#2C6E75;
+    --gold:#B98D3E; --clay:#B5654B;
+    --good:#3E7A52; --good-soft:#E1EFE4;
+    --pending:#8A8375; --pending-soft:#EFEBE0;
+    --shadow: 0 1px 2px rgba(22,59,63,0.06), 0 6px 20px rgba(22,59,63,0.07);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#10171A; --card:#182226; --line:#28352F;
+      --ink:#ECEEEA; --ink-soft:#A9B5AE;
+      --teal:#1E4A4F; --teal-2:#3E8A91;
+      --gold:#D3A75C; --clay:#D68870;
+      --good:#6FBF8B; --good-soft:#1B2A20;
+      --pending:#93998F; --pending-soft:#232922;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#10171A; --card:#182226; --line:#28352F;
+    --ink:#ECEEEA; --ink-soft:#A9B5AE;
+    --teal:#1E4A4F; --teal-2:#3E8A91;
+    --gold:#D3A75C; --clay:#D68870;
+    --good:#6FBF8B; --good-soft:#1B2A20;
+    --pending:#93998F; --pending-soft:#232922;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.4);
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box; min-width:0;}
+  body{margin:0; padding-inline:16px; background:var(--paper); color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif; font-size:15px;}
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif; margin:0; font-weight:600; letter-spacing:-0.01em; text-wrap:balance;}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+  .wrap{max-width:760px; margin:0 auto;}
+  button{font-family:inherit;}
+
+  /* ---------- Header ---------- */
+  header{padding-block:20px 14px; text-align:center;}
+  header h1{font-size:1.5rem; color:var(--teal);}
+  header .sub{margin-top:5px; font-size:0.86rem; color:var(--ink-soft);}
+  header .sub b{color:var(--ink);}
+
+  .tabs{display:flex; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:999px;
+    padding:4px; margin:14px auto 0; max-width:340px; box-shadow:var(--shadow);}
+  .tabs button{flex:1; border:none; background:transparent; color:var(--ink-soft); font-weight:600; font-size:0.86rem;
+    padding:9px 10px; border-radius:999px; cursor:pointer; transition:background .15s, color .15s;}
+  .tabs button.active{background:var(--teal); color:#F4F1E8;}
+
+  /* ---------- Sticky command bar ---------- */
+  .cmdbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:5; background:var(--paper);
+    padding-block:14px 10px; margin-top:6px;}
+  .countbar{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line);
+    border-radius:10px; padding:10px 14px; box-shadow:var(--shadow); margin-bottom:10px;}
+  .countbar .num{font-family:'Fraunces',serif; font-size:1.3rem; font-weight:600; color:var(--good);}
+  .countbar .of{color:var(--ink-soft); font-size:0.86rem;}
+  .countbar .bartrack{flex:1; height:7px; background:var(--line); border-radius:99px; overflow:hidden; min-width:60px;}
+  .countbar .barfill{height:100%; background:var(--good); border-radius:99px; transition:width .3s ease;}
+  .countbar .pct{font-size:0.8rem; color:var(--ink-soft); font-weight:600; min-width:2.6em; text-align:right;}
+
+  .searchrow{display:flex; gap:8px; margin-bottom:8px;}
+  .searchrow input[type=search]{flex:1; min-width:0; padding:11px 14px; border-radius:9px; border:1px solid var(--line);
+    background:var(--card); color:var(--ink); font-size:0.95rem;}
+  .searchrow input[type=search]::placeholder{color:var(--ink-soft);}
+
+  .filterrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  select{padding:8px 12px; border-radius:9px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:0.85rem;}
+  .chip{border:1px solid var(--line); background:var(--card); color:var(--ink-soft); font-size:0.82rem; font-weight:600;
+    padding:7px 13px; border-radius:999px; cursor:pointer; white-space:nowrap;}
+  .chip.active{background:var(--teal); border-color:var(--teal); color:#F4F1E8;}
+  .filter-scroll{display:flex; gap:8px; overflow-x:auto; padding-bottom:2px;}
+
+  /* ---------- Roster list ---------- */
+  #rosterCount{font-size:0.8rem; color:var(--ink-soft); margin:2px 2px 8px;}
+  .roster{display:flex; flex-direction:column; gap:8px; padding-bottom:28px;}
+  .row{display:flex; align-items:center; gap:12px; background:var(--card); border:1px solid var(--line);
+    border-radius:10px; padding:11px 12px; box-shadow:var(--shadow);}
+  .row.present{border-color:var(--good); background:var(--good-soft);}
+  .row .code{font-size:0.78rem; color:var(--ink-soft); background:var(--paper); border:1px solid var(--line);
+    border-radius:6px; padding:2px 7px; flex-shrink:0;}
+  .row.present .code{background:var(--card);}
+  .row .who{flex:1; min-width:0;}
+  .row .who .name{font-weight:600; font-size:0.95rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .row .who .meta{font-size:0.78rem; color:var(--ink-soft); margin-top:1px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .row .who .meta .saff-a{color:var(--gold); font-weight:600;}
+  .row .who .meta .saff-d{color:var(--clay); font-weight:600;}
+  .row .who .meta .musi-tag{color:var(--good); font-weight:600;}
+  .row .at{font-size:0.72rem; color:var(--ink-soft); flex-shrink:0; text-align:right; display:none;}
+  .row.present .at{display:block;}
+  .markbtn{flex-shrink:0; border:1px solid var(--line); background:var(--paper); color:var(--ink);
+    font-weight:600; font-size:0.82rem; padding:9px 14px; border-radius:8px; cursor:pointer; transition:transform .1s;}
+  .markbtn:active{transform:scale(0.96);}
+  .row.present .markbtn{background:var(--good); border-color:var(--good); color:#fff;}
+  .emptystate{text-align:center; color:var(--ink-soft); padding:40px 16px; font-size:0.9rem;}
+
+  /* ---------- Report ---------- */
+  #reportView{padding-bottom:36px;}
+  .hero-report{background:var(--teal); color:#F4F1E8; border-radius:12px; padding:22px 20px; text-align:center;
+    box-shadow:var(--shadow); margin-top:14px;}
+  .hero-report .big{font-family:'Fraunces',serif; font-size:3rem; font-weight:700; line-height:1;}
+  .hero-report .lbl{margin-top:6px; font-size:0.9rem; opacity:0.85;}
+  .hero-report .ring-row{display:flex; justify-content:center; gap:22px; margin-top:14px; font-size:0.82rem; opacity:0.9;}
+  .hero-report .ring-row b{font-size:1rem; display:block; font-family:'Fraunces',serif;}
+
+  .rcard{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; box-shadow:var(--shadow); margin-top:14px;}
+  .rcard h3{font-size:1rem; margin-bottom:12px;}
+  .splitrow{display:flex; gap:12px;}
+  .splitrow > div{flex:1; padding:12px 14px; border-radius:9px;}
+  .splitrow .awwal{background:color-mix(in srgb, var(--gold) 14%, var(--card));}
+  .splitrow .dom{background:color-mix(in srgb, var(--clay) 14%, var(--card));}
+  .splitrow .lbl{font-size:0.75rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.03em;}
+  .splitrow .val{font-family:'Fraunces',serif; font-size:1.4rem; font-weight:600; margin-top:2px;}
+  .splitrow .sub{font-size:0.76rem; color:var(--ink-soft); margin-top:2px;}
+
+  table.mtable{width:100%; border-collapse:collapse; font-size:0.86rem;}
+  table.mtable th{text-align:left; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.03em;
+    color:var(--ink-soft); font-weight:600; padding:6px 4px; border-bottom:1px solid var(--line);}
+  table.mtable td{padding:8px 4px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  table.mtable td.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .mbar-wrap{background:var(--line); border-radius:99px; height:6px; overflow:hidden; width:100%;}
+  .mbar{height:100%; background:var(--teal-2); border-radius:99px;}
+  .tblwrap{overflow-x:auto;}
+
+  .exportrow{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+  .exportbtn{flex:1; min-width:160px; background:var(--teal); color:#F4F1E8; border:none; border-radius:9px;
+    padding:12px 16px; font-weight:600; font-size:0.88rem; cursor:pointer;}
+  .exportbtn.secondary{background:var(--card); color:var(--ink); border:1px solid var(--line);}
+  .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper);
+    padding:10px 18px; border-radius:8px; font-size:0.85rem; box-shadow:var(--shadow); opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:20;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+  .liveline{text-align:center; font-size:0.75rem; color:var(--ink-soft); margin-top:16px;}
+  .liveline .dot{display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--good); margin-right:5px;}
+
+  [hidden]{display:none!important;}
+  @media (max-width:480px){
+    header h1{font-size:1.3rem;}
+    .hero-report .big{font-size:2.4rem;}
+    .splitrow{flex-direction:column;}
+    .row{padding:9px 10px; gap:8px;}
+    .row .code{font-size:0.72rem; padding:2px 5px;}
+    .markbtn{padding:8px 10px; font-size:0.76rem;}
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ijtema Registration</h1>
+    <div class="sub">Regional Ijtema — Upper North Island<br><b>Auckland Majalis &amp; Waikato</b> · 9 October 2026</div>
+    <div class="tabs">
+      <button id="tabRegisterBtn" class="active">Register</button>
+      <button id="tabReportBtn">Report</button>
+    </div>
+  </header>
+
+  <div id="registerView">
+    <div class="cmdbar">
+      <div class="countbar">
+        <div class="num" id="cbNum">—</div>
+        <div class="of">of <span id="cbTotal">—</span> checked in</div>
+        <div class="bartrack"><div class="barfill" id="cbFill" style="width:0%"></div></div>
+        <div class="pct" id="cbPct">—</div>
+      </div>
+      <div class="searchrow">
+        <input type="search" id="search" placeholder="Search Tajneed code or name…" autocomplete="off">
+      </div>
+      <div class="filterrow">
+        <select id="filterMajlis"><option value="">All Majalis</option></select>
+        <div class="filter-scroll" id="statusChips">
+          <button class="chip active" data-status="">All</button>
+          <button class="chip" data-status="pending">Not yet</button>
+          <button class="chip" data-status="present">Checked in</button>
+        </div>
+      </div>
+    </div>
+    <div id="rosterCount"></div>
+    <div class="roster" id="roster"></div>
+  </div>
+
+  <div id="reportView" hidden>
+    <div class="hero-report">
+      <div class="big" id="repBig">—</div>
+      <div class="lbl">Ansar checked in, of <span id="repTotal">—</span> expected</div>
+      <div class="ring-row">
+        <div><b id="repAwwalPresent">—</b>Saff-e-Awwal</div>
+        <div><b id="repDomPresent">—</b>Saff-e-Dom</div>
+        <div><b id="repMusiPresent">—</b>Musi present</div>
+      </div>
+    </div>
+
+    <div class="rcard">
+      <h3>By Saff</h3>
+      <div class="splitrow">
+        <div class="awwal">
+          <div class="lbl">Saff-e-Awwal</div>
+          <div class="val" id="saffAwwalVal">—</div>
+          <div class="sub" id="saffAwwalSub"></div>
+        </div>
+        <div class="dom">
+          <div class="lbl">Saff-e-Dom</div>
+          <div class="val" id="saffDomVal">—</div>
+          <div class="sub" id="saffDomSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rcard">
+      <h3>By Majlis</h3>
+      <div class="tblwrap">
+        <table class="mtable">
+          <thead><tr><th>Majlis</th><th class="num">Present</th><th class="num">Expected</th><th class="num">%</th><th style="width:30%"></th></tr></thead>
+          <tbody id="majlisReportBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="exportrow">
+      <button class="exportbtn" id="exportSummary">Export summary (CSV)</button>
+      <button class="exportbtn secondary" id="exportFull">Export full list (CSV)</button>
+    </div>
+    <div class="liveline"><span class="dot"></span>Live — updates automatically as officers check people in</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Static roster (North region: Auckland Majalis + Waikato) ----------
+  var ROSTER = [{"c":1853,"n":"Aamir Rasheed","m":"Whau","s":"D","u":1},{"c":1333,"n":"Abdul Farouq Samad","m":"Waikato","s":"A","u":0},{"c":1625,"n":"Abdul Majeed Touseef","m":"Waikato","s":"A","u":1},{"c":1283,"n":"Abdul Rehan Samut","m":"Manurewa","s":"A","u":0},{"c":2299,"n":"Abdul Saboor Khan","m":"Whau","s":"A","u":1},{"c":1880,"n":"Abid Shahzad","m":"Manurewa","s":"D","u":0},{"c":1532,"n":"Ahmad Raza Khan","m":"Whau","s":"D","u":0},{"c":1012,"n":"Ahmad Waseem Waseem Khan","m":"Te Irirangi","s":"A","u":0},{"c":1390,"n":"Ahsan Ahmad Syed","m":"Te Irirangi","s":"D","u":1},{"c":1164,"n":"Ajaz Ahmad Khan","m":"Te Irirangi","s":"A","u":0},{"c":1166,"n":"Altaf Khan","m":"Manukau","s":"A","u":0},{"c":1736,"n":"Anwar Ahmed","m":"Waikato","s":"D","u":1},{"c":1410,"n":"Asad Ullah Cheema","m":"Papakura","s":"A","u":0},{"c":2213,"n":"Asif Ali","m":"Waikato","s":"D","u":0},{"c":2260,"n":"Asim Islam","m":"Manukau","s":"D","u":1},{"c":1638,"n":"Ata-Ul Hameed","m":"Manukau","s":"D","u":0},{"c":1445,"n":"Atif Javad Butt","m":"Whau","s":"D","u":0},{"c":1993,"n":"Atif Shahzad","m":"Papakura","s":"D","u":1},{"c":1102,"n":"Basarat Ahmad","m":"Papakura","s":"A","u":0},{"c":1011,"n":"Basharat Ahmad Khan","m":"Manurewa","s":"A","u":0},{"c":1063,"n":"Basharat Ali","m":"Papakura","s":"A","u":1},{"c":1997,"n":"Bashir Ahmad Butt","m":"Manurewa","s":"A","u":1},{"c":1013,"n":"Bashir Ahmed Khan","m":"Te Irirangi","s":"A","u":1},{"c":1009,"n":"Bashir Mubarak Ahmad Khan","m":"Te Irirangi","s":"A","u":1},{"c":2488,"n":"Chaudhary Ghazanfar Ali Malhi","m":"Manurewa","s":"A","u":1},{"c":2359,"n":"Ejaz Ahmad","m":"Waikato","s":"D","u":1},{"c":1010,"n":"Eqbal Ahmad Khan","m":"Te Irirangi","s":"A","u":0},{"c":1903,"n":"Faraz Babar","m":"Papakura","s":"D","u":0},{"c":1952,"n":"Farooq Ahmad","m":"Manurewa","s":"D","u":0},{"c":1632,"n":"Farooq Ahmed Bajwa","m":"Te Irirangi","s":"D","u":0},{"c":1925,"n":"Fazalur Rehman Shaukat","m":"Te Irirangi","s":"A","u":0},{"c":1032,"n":"Feroz Gaznabi","m":"Manukau","s":"A","u":0},{"c":1285,"n":"Feroz Mohammad","m":"Manukau","s":"A","u":0},{"c":2383,"n":"Firoz Khan","m":"Manurewa","s":"A","u":1},{"c":1176,"n":"Frashat Altaf Khan","m":"Manukau","s":"D","u":0},{"c":1136,"n":"Ghulam Ahmad Cheema","m":"Manukau","s":"A","u":1},{"c":1725,"n":"Gulam Azimuddin","m":"Whau","s":"D","u":1},{"c":1280,"n":"Haroon Samat","m":"Manukau","s":"A","u":0},{"c":1316,"n":"Hassan Singh","m":"Whau","s":"A","u":0},{"c":2188,"n":"Ibrahim Akinpelu Olanipekun","m":"Manukau","s":"D","u":0},{"c":1936,"n":"Ibrar Ahmed","m":"Waikato","s":"D","u":1},{"c":1873,"n":"Iftikhar Ahmad Gondal","m":"Manurewa","s":"D","u":0},{"c":2043,"n":"Iftikhar Ahmed","m":"Papakura","s":"D","u":0},{"c":1104,"n":"Ilias Ahmad","m":"Papakura","s":"D","u":0},{"c":1652,"n":"Imran Ahmad Hanif","m":"Manukau","s":"D","u":0},{"c":1385,"n":"Imran Ahmad Malik","m":"Papakura","s":"D","u":1},{"c":1360,"n":"Imran Ahmed Ahmed Basharath Ahamed","m":"Te Irirangi","s":"D","u":0},{"c":1551,"n":"Imran Ahmed Gondal","m":"Manurewa","s":"D","u":1},{"c":1603,"n":"Imran Munawar Ahmad","m":"Waikato","s":"D","u":1},{"c":2432,"n":"Imtiaz Ahmed","m":"Whau","s":"D","u":1},{"c":1523,"n":"Irshaad Ahmed Shah","m":"Manukau","s":"D","u":0},{"c":2049,"n":"Irshad Ahmad","m":"Manukau","s":"D","u":1},{"c":1230,"n":"Isaad Mohammed","m":"Manukau","s":"D","u":0},{"c":1221,"n":"Israr Maqbool","m":"Manukau","s":"A","u":0},{"c":1014,"n":"Jaffrullah Khan","m":"Te Irirangi","s":"A","u":1},{"c":1222,"n":"Jalal Maqbool","m":"Manukau","s":"A","u":0},{"c":1989,"n":"Jameel Ahmed Butt","m":"Manurewa","s":"D","u":1},{"c":1182,"n":"Javed Khan","m":"Whau","s":"D","u":0},{"c":1721,"n":"Khalil Ahmad","m":"Manukau","s":"D","u":0},{"c":2404,"n":"Khawaja Rizwan Nasir","m":"Manukau","s":"D","u":0},{"c":1038,"n":"Kitchilan Sirajur Raheem","m":"Te Irirangi","s":"A","u":0},{"c":1531,"n":"Lee Eastham","m":"Te Irirangi","s":"D","u":0},{"c":2297,"n":"Lutf ur Rahman Malik","m":"Manukau","s":"D","u":1},{"c":2140,"n":"Maghfoor Ahmad Muneeb","m":"Waikato","s":"A","u":1},{"c":1041,"n":"Mahmood Ahmad","m":"Whau","s":"A","u":0},{"c":1139,"n":"Mansoor Ahmad Cheema","m":"Papakura","s":"D","u":1},{"c":1500,"n":"Master Bashir Ahmad","m":"Manurewa","s":"A","u":0},{"c":1002,"n":"Mathew Abu Bakr Howell","m":"Waikato","s":"A","u":0},{"c":2128,"n":"Mehmood Ahmed","m":"Waikato","s":"A","u":0},{"c":2131,"n":"Mirza Abdul Hameed","m":"Waikato","s":"D","u":1},{"c":1978,"n":"Mirza Atta ul Hameed","m":"Whau","s":"D","u":1},{"c":2490,"n":"Mirza Nawaz Ahmad","m":"Waikato","s":"A","u":0},{"c":1598,"n":"Mirza Sarfraz Ahmad","m":"Waikato","s":"D","u":1},{"c":2152,"n":"Mirza Shareef Ahmad","m":"Manurewa","s":"D","u":0},{"c":1186,"n":"Mofeezul Illahi Khan","m":"Te Irirangi","s":"A","u":0},{"c":1451,"n":"Mohammad Asad Khalil","m":"Manukau","s":"A","u":0},{"c":1352,"n":"Mohammed Anwar","m":"Papakura","s":"A","u":0},{"c":1236,"n":"Mohammed Anwar Shah","m":"Te Irirangi","s":"A","u":0},{"c":1825,"n":"Mohammed Areef","m":"Manukau","s":"D","u":0},{"c":1446,"n":"Mohammed Fhazeel Hasan","m":"Waikato","s":"D","u":0},{"c":1405,"n":"Mohammed Hafieef Ahmad Khan","m":"Whau","s":"A","u":0},{"c":1435,"n":"Mohammed Hali Hakim","m":"Te Irirangi","s":"A","u":0},{"c":1000,"n":"Mohammed Iqbal","m":"Whau","s":"A","u":1},{"c":1513,"n":"Mohammed Iraz Khan","m":"Manukau","s":"D","u":0},{"c":1018,"n":"Mohammed Ismail","m":"Manurewa","s":"A","u":0},{"c":1794,"n":"Mohammed Khan","m":"Waikato","s":"A","u":0},{"c":1239,"n":"Mohammed Mubarak Ahmed Tahir","m":"Manurewa","s":"A","u":0},{"c":1482,"n":"Mohammed Sarfaraz","m":"Whau","s":"D","u":0},{"c":1448,"n":"Mohammed Shagil Hasan","m":"Waikato","s":"D","u":0},{"c":1026,"n":"Mohammed Shahid","m":"Papakura","s":"A","u":1},{"c":1436,"n":"Mohammed Shahidul Hasan","m":"Waikato","s":"A","u":0},{"c":1488,"n":"Moshin Khan Maqbool","m":"Whau","s":"D","u":0},{"c":1188,"n":"Mubarak Ahmad Khan","m":"Manukau","s":"A","u":1},{"c":1298,"n":"Mubarak Ahmad Shah","m":"Manukau","s":"A","u":0},{"c":1828,"n":"Mudassir Hussain","m":"Manurewa","s":"D","u":0},{"c":1617,"n":"Muhammad Aamir Tahir","m":"Waikato","s":"D","u":0},{"c":1008,"n":"Muhammad Afzal Sadiq","m":"Manurewa","s":"A","u":1},{"c":1391,"n":"Muhammad Amir Khan","m":"Papakura","s":"A","u":1},{"c":1575,"n":"Muhammad Anwar Tariq","m":"Whau","s":"D","u":0},{"c":1870,"n":"Muhammad Asif Nawaz","m":"Manukau","s":"D","u":0},{"c":1238,"n":"Muhammad Imran","m":"Manukau","s":"D","u":1},{"c":1527,"n":"Muhammad Javaid Malhi","m":"Manurewa","s":"D","u":1},{"c":1558,"n":"Muhammad Malik Ahsan","m":"Whau","s":"D","u":1},{"c":1051,"n":"Muhammad Mohsan","m":"Whau","s":"D","u":1},{"c":1866,"n":"Muhammad Sadiq Hussain","m":"Manurewa","s":"A","u":0},{"c":2235,"n":"Muhammad Saleem","m":"Papakura","s":"D","u":0},{"c":1986,"n":"Muhammad Sanam","m":"Whau","s":"D","u":0},{"c":2364,"n":"Muhammad Sharif","m":"Whau","s":"A","u":1},{"c":2107,"n":"Muhammad Siddique","m":"Manukau","s":"A","u":1},{"c":1050,"n":"Muhammad Yaseen Chaudhry","m":"Manurewa","s":"A","u":1},{"c":1613,"n":"Munawar Ahmad","m":"Waikato","s":"A","u":0},{"c":1484,"n":"Musharraf Mahmood Ahmed Ginai","m":"Te Irirangi","s":"A","u":0},{"c":1818,"n":"Musheer Ilahi Khan","m":"Whau","s":"D","u":1},{"c":1109,"n":"Nadeem Ahmad","m":"Whau","s":"A","u":1},{"c":1764,"n":"Naeem Ahmad","m":"Waikato","s":"A","u":0},{"c":1362,"n":"Najam Ul Islam","m":"Papakura","s":"D","u":1},{"c":1060,"n":"Nasir Ahamed Mohammad Zafarullah","m":"Te Irirangi","s":"A","u":1},{"c":1194,"n":"Nasir Khan","m":"Manukau","s":"A","u":0},{"c":1540,"n":"Nasrullah Khan","m":"Papakura","s":"A","u":1},{"c":1071,"n":"Nuruddin Boateng","m":"Manurewa","s":"D","u":0},{"c":1543,"n":"Qamar Bilal Ahmad","m":"Waikato","s":"D","u":0},{"c":1717,"n":"Qamar Qadoos","m":"Waikato","s":"A","u":0},{"c":1565,"n":"Rathan Pakeerathan Nagarajah","m":"Te Irirangi","s":"D","u":0},{"c":1233,"n":"Rauf Mohammad","m":"Manukau","s":"A","u":0},{"c":1303,"n":"Roshan Dildar Shah","m":"Te Irirangi","s":"D","u":0},{"c":1054,"n":"Sabhan Shah","m":"Manurewa","s":"A","u":0},{"c":1402,"n":"Sadiq Ahmad Syed","m":"Te Irirangi","s":"A","u":1},{"c":1223,"n":"Saijad Ali Maqbool","m":"Manukau","s":"D","u":0},{"c":1595,"n":"Salman Ahmad","m":"Waikato","s":"D","u":1},{"c":2600,"n":"Salman Razi Syed Bokhari","m":"Te Irirangi","s":"D","u":1},{"c":1620,"n":"Sami Ur-Rehman Khan Lodhi","m":"Waikato","s":"D","u":0},{"c":1271,"n":"Sanjiwa (Ataul Haq) Rajan Reddy","m":"Papakura","s":"D","u":0},{"c":1075,"n":"Saqib Ahmad","m":"Papakura","s":"D","u":0},{"c":1210,"n":"Sarfraz Usman Usman Khan","m":"Manurewa","s":"D","u":0},{"c":1264,"n":"Shafiq ur Rehman","m":"Manurewa","s":"D","u":1},{"c":2565,"n":"Shahid Ahmad","m":"Manurewa","s":"A","u":0},{"c":2223,"n":"Shahid Pervaiz","m":"Manukau","s":"D","u":1},{"c":1712,"n":"Shahzada Mahmood","m":"Waikato","s":"D","u":0},{"c":1234,"n":"Shameem Mohammed","m":"Manukau","s":"D","u":0},{"c":1113,"n":"Shanil Ahmad","m":"Whau","s":"D","u":0},{"c":1021,"n":"Sharif Ahmed","m":"Whau","s":"A","u":1},{"c":1015,"n":"Sheikhil Ahmed Khan","m":"Te Irirangi","s":"A","u":0},{"c":1587,"n":"Sheraz Ahmed Loun","m":"Whau","s":"D","u":0},{"c":1056,"n":"Shiraaz Haroon Shah","m":"Te Irirangi","s":"D","u":0},{"c":2228,"n":"Shoaib Ahmed","m":"Manurewa","s":"D","u":0},{"c":1142,"n":"Sultan Sikander Cheema","m":"Te Irirangi","s":"D","u":0},{"c":1657,"n":"Syed Naj-Mus-Sahar Sabzwari","m":"Whau","s":"D","u":0},{"c":1386,"n":"Syed Sohail Ahmed","m":"Waikato","s":"D","u":0},{"c":2578,"n":"Syed Zahid Shah","m":"Waikato","s":"D","u":0},{"c":1471,"n":"Tahir Ahmad","m":"Manurewa","s":"D","u":1},{"c":2176,"n":"Tahir Ahmad","m":"Manukau","s":"D","u":0},{"c":1786,"n":"Tahir Latif","m":"Te Irirangi","s":"D","u":0},{"c":1244,"n":"Taj Mohammed","m":"Whau","s":"A","u":0},{"c":2339,"n":"Taofeek Sanyaolu","m":"Whau","s":"D","u":1},{"c":1330,"n":"Tasawwar Ahmad Chaudhry","m":"Waikato","s":"D","u":0},{"c":2445,"n":"Tasleem Ahmad Shah","m":"Manukau","s":"D","u":0},{"c":2334,"n":"Taswar Iqbal","m":"Manurewa","s":"D","u":1},{"c":1235,"n":"Tayeen Mohammad","m":"Manukau","s":"A","u":0},{"c":1062,"n":"Thahir Ahmed Mohamed Zafarulla","m":"Te Irirangi","s":"D","u":0},{"c":2320,"n":"Tin Maung Htwe Nasir Ahmad","m":"Te Irirangi","s":"D","u":1},{"c":1804,"n":"Waheed Ahmed Gujjar","m":"Waikato","s":"D","u":1},{"c":1499,"n":"Yousuf Musa Ahmad","m":"Manukau","s":"A","u":0},{"c":1017,"n":"Yunus Ahmad Hamid Hanif","m":"Whau","s":"D","u":1},{"c":1574,"n":"Zaheer Ahmad Khan","m":"Te Irirangi","s":"D","u":0},{"c":1708,"n":"Zahid Tanveer","m":"Manurewa","s":"A","u":0},{"c":1212,"n":"Zainal Aiyaz Khan","m":"Manurewa","s":"D","u":0},{"c":1507,"n":"Zulfiqar Ahmed","m":"Whau","s":"D","u":0}];
+  var MAJLIS_ORDER = ["Whau","Manukau","Manurewa","Te Irirangi","Papakura","Waikato"];
+  var TOTAL = ROSTER.length;
+
+  var byCode = {};
+  ROSTER.forEach(function(m){ byCode[m.c] = m; });
+
+  var checkins = {}; // code -> {present, at, byId}
+  var dbApi = null, userApi = null, downloadsApi = null;
+  var profileCache = {};
+
+  var els = {
+    search: document.getElementById('search'),
+    filterMajlis: document.getElementById('filterMajlis'),
+    statusChips: document.getElementById('statusChips'),
+    roster: document.getElementById('roster'),
+    rosterCount: document.getElementById('rosterCount'),
+    cbNum: document.getElementById('cbNum'),
+    cbTotal: document.getElementById('cbTotal'),
+    cbFill: document.getElementById('cbFill'),
+    cbPct: document.getElementById('cbPct'),
+    tabRegisterBtn: document.getElementById('tabRegisterBtn'),
+    tabReportBtn: document.getElementById('tabReportBtn'),
+    registerView: document.getElementById('registerView'),
+    reportView: document.getElementById('reportView'),
+    toast: document.getElementById('toast')
+  };
+
+  var state = { q:'', majlis:'', status:'' };
+
+  // ---------- Populate Majlis filter ----------
+  MAJLIS_ORDER.forEach(function(mj){
+    var opt = document.createElement('option');
+    opt.value = mj; opt.textContent = mj;
+    els.filterMajlis.appendChild(opt);
+  });
+
+  // ---------- Tabs ----------
+  els.tabRegisterBtn.addEventListener('click', function(){ showTab('register'); });
+  els.tabReportBtn.addEventListener('click', function(){ showTab('report'); });
+  function showTab(which){
+    var isReg = which === 'register';
+    els.registerView.hidden = !isReg;
+    els.reportView.hidden = isReg;
+    els.tabRegisterBtn.classList.toggle('active', isReg);
+    els.tabReportBtn.classList.toggle('active', !isReg);
+    if(!isReg) renderReport();
+  }
+
+  // ---------- Search / filter wiring ----------
+  els.search.addEventListener('input', function(){ state.q = els.search.value.trim().toLowerCase(); renderRoster(); });
+  els.filterMajlis.addEventListener('change', function(){ state.majlis = els.filterMajlis.value; renderRoster(); });
+  els.statusChips.addEventListener('click', function(e){
+    var btn = e.target.closest('.chip'); if(!btn) return;
+    state.status = btn.dataset.status;
+    els.statusChips.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c===btn); });
+    renderRoster();
+  });
+
+  function matches(m){
+    if(state.majlis && m.m !== state.majlis) return false;
+    var ci = checkins[m.c];
+    var present = !!(ci && ci.present);
+    if(state.status === 'pending' && present) return false;
+    if(state.status === 'present' && !present) return false;
+    if(state.q){
+      var hay = (String(m.c) + ' ' + m.n).toLowerCase();
+      if(hay.indexOf(state.q) === -1) return false;
+    }
+    return true;
+  }
+
+  function fmtTime(iso){
+    try{
+      var d = new Date(iso);
+      return d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+    }catch(e){ return ''; }
+  }
+
+  function saffLabel(m){
+    return m.s === 'A' ? '<span class="saff-a">Saff-e-Awwal</span>' : '<span class="saff-d">Saff-e-Dom</span>';
+  }
+
+  // ---------- Render roster ----------
+  function renderRoster(){
+    var rows = ROSTER.filter(matches);
+    els.rosterCount.textContent = rows.length + ' of ' + TOTAL + ' shown';
+    if(!rows.length){
+      els.roster.innerHTML = '<div class="emptystate">No one matches this search / filter.</div>';
+    } else {
+      els.roster.innerHTML = rows.map(function(m){
+        var ci = checkins[m.c];
+        var present = !!(ci && ci.present);
+        var musi = m.u ? ' · <span class="musi-tag">Musi</span>' : '';
+        return '<div class="row' + (present?' present':'') + '" data-code="' + m.c + '">' +
+          '<div class="code mono">' + m.c + '</div>' +
+          '<div class="who"><div class="name"></div><div class="meta">' + m.m + ' · ' + saffLabel(m) + musi + '</div></div>' +
+          '<div class="at">' + (ci && ci.at ? fmtTime(ci.at) : '') + '</div>' +
+          '<button class="markbtn" data-code="' + m.c + '">' + (present ? 'Present ✓' : 'Mark present') + '</button>' +
+        '</div>';
+      }).join('');
+      // set names via textContent (never innerHTML) to keep user-entered-shaped data safe
+      var nameEls = els.roster.querySelectorAll('.row');
+      nameEls.forEach(function(rowEl){
+        var code = rowEl.dataset.code;
+        var m = byCode[code];
+        rowEl.querySelector('.name').textContent = m.n;
+      });
+    }
+  }
+
+  els.roster.addEventListener('click', function(e){
+    var btn = e.target.closest('.markbtn'); if(!btn) return;
+    toggleCheckin(btn.dataset.code);
+  });
+
+  function toggleCheckin(code){
+    if(!dbApi){ showToast('Not connected yet — try again in a moment'); return; }
+    var ci = checkins[code];
+    var present = !!(ci && ci.present);
+    var ref = dbApi.collection('checkins').doc(String(code));
+    if(present){
+      ref.delete().catch(function(){ showToast('Could not undo — try again'); });
+    } else {
+      var body = { present:true, at: new Date().toISOString() };
+      (userApi ? userApi.id() : Promise.resolve(null)).then(function(uid){
+        if(uid) body.byId = uid;
+        return ref.set(body);
+      }).catch(function(){ showToast('Could not save — check connection and try again'); });
+    }
+  }
+
+  var toastTimer = null;
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ els.toast.classList.remove('show'); }, 2400);
+  }
+
+  // ---------- Report ----------
+  function computeReport(){
+    var presentCount = 0, awwalP=0, awwalT=0, domP=0, domT=0, musiP=0;
+    var byMajlis = {};
+    MAJLIS_ORDER.forEach(function(mj){ byMajlis[mj] = {total:0, present:0}; });
+    ROSTER.forEach(function(m){
+      var ci = checkins[m.c];
+      var present = !!(ci && ci.present);
+      if(present) presentCount++;
+      if(m.s === 'A'){ awwalT++; if(present) awwalP++; } else { domT++; if(present) domP++; }
+      if(m.u && present) musiP++;
+      byMajlis[m.m].total++;
+      if(present) byMajlis[m.m].present++;
+    });
+    return {presentCount:presentCount, awwalP:awwalP, awwalT:awwalT, domP:domP, domT:domT, musiP:musiP, byMajlis:byMajlis};
+  }
+
+  function pct(n,d){ return d ? Math.round(n/d*100) + '%' : '—'; }
+
+  function renderReport(){
+    var r = computeReport();
+    document.getElementById('repBig').textContent = r.presentCount;
+    document.getElementById('repTotal').textContent = TOTAL;
+    document.getElementById('repAwwalPresent').textContent = r.awwalP;
+    document.getElementById('repDomPresent').textContent = r.domP;
+    document.getElementById('repMusiPresent').textContent = r.musiP;
+    document.getElementById('saffAwwalVal').textContent = r.awwalP + ' / ' + r.awwalT;
+    document.getElementById('saffAwwalSub').textContent = pct(r.awwalP, r.awwalT) + ' checked in';
+    document.getElementById('saffDomVal').textContent = r.domP + ' / ' + r.domT;
+    document.getElementById('saffDomSub').textContent = pct(r.domP, r.domT) + ' checked in';
+
+    var tbody = document.getElementById('majlisReportBody');
+    var rowsHtml = MAJLIS_ORDER.map(function(mj){
+      var d = r.byMajlis[mj];
+      var p = d.total ? (d.present/d.total*100) : 0;
+      return '<tr><td>' + mj + '</td><td class="num">' + d.present + '</td><td class="num">' + d.total +
+        '</td><td class="num">' + pct(d.present, d.total) + '</td>' +
+        '<td><div class="mbar-wrap"><div class="mbar" style="width:' + p + '%"></div></div></td></tr>';
+    }).join('');
+    tbody.innerHTML = rowsHtml;
+  }
+
+  // ---------- Live counters (also used on Register tab) ----------
+  function renderCounters(){
+    var present = 0;
+    ROSTER.forEach(function(m){ if(checkins[m.c] && checkins[m.c].present) present++; });
+    els.cbNum.textContent = present;
+    els.cbTotal.textContent = TOTAL;
+    var p = TOTAL ? (present/TOTAL*100) : 0;
+    els.cbFill.style.width = p + '%';
+    els.cbPct.textContent = Math.round(p) + '%';
+  }
+
+  function renderAll(){
+    renderCounters();
+    renderRoster();
+    if(!els.reportView.hidden) renderReport();
+  }
+
+  // ---------- CSV export ----------
+  function csvEscape(v){
+    v = String(v == null ? '' : v);
+    if(/[",\n]/.test(v)) return '"' + v.replace(/"/g,'""') + '"';
+    return v;
+  }
+  function toCsv(rows){
+    return rows.map(function(r){ return r.map(csvEscape).join(','); }).join('\r\n');
+  }
+  function saveCsv(filename, rows){
+    var content = toCsv(rows);
+    if(downloadsApi){
+      downloadsApi.save({filename:filename, data: content}).catch(function(){
+        fallbackDownload(filename, content);
+      });
+    } else {
+      fallbackDownload(filename, content);
+    }
+  }
+  function fallbackDownload(filename, content){
+    try{
+      var blob = new Blob([content], {type:'text/csv'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    }catch(e){ showToast('Could not export — try again'); }
+  }
+
+  document.getElementById('exportSummary').addEventListener('click', function(){
+    var r = computeReport();
+    var rows = [
+      ['Ijtema Attendance Summary — Regional Ijtema Upper North Island, 9 Oct 2026'],
+      [],
+      ['Metric','Present','Expected','Percent'],
+      ['Total', r.presentCount, TOTAL, pct(r.presentCount, TOTAL)],
+      ['Saff-e-Awwal', r.awwalP, r.awwalT, pct(r.awwalP, r.awwalT)],
+      ['Saff-e-Dom', r.domP, r.domT, pct(r.domP, r.domT)],
+      ['Musi (present)', r.musiP, '', ''],
+      [],
+      ['Majlis','Present','Expected','Percent']
+    ];
+    MAJLIS_ORDER.forEach(function(mj){
+      var d = r.byMajlis[mj];
+      rows.push([mj, d.present, d.total, pct(d.present, d.total)]);
+    });
+    saveCsv('ijtema-attendance-summary.csv', rows);
+  });
+
+  document.getElementById('exportFull').addEventListener('click', function(){
+    var rows = [['Tajneed Code','Name','Majlis','Saff','Musi','Present','Checked-in time']];
+    ROSTER.slice().sort(function(a,b){ return a.n.localeCompare(b.n); }).forEach(function(m){
+      var ci = checkins[m.c];
+      var present = !!(ci && ci.present);
+      rows.push([m.c, m.n, m.m, m.s==='A'?'Saff-e-Awwal':'Saff-e-Dom', m.u?'Yes':'No', present?'Yes':'No', present && ci.at ? ci.at : '']);
+    });
+    saveCsv('ijtema-attendance-full-list.csv', rows);
+  });
+
+  // ---------- Capability wiring ----------
+  function boot(){
+    renderAll();
+    if(!window.claude || !window.claude.use){ return; }
+    window.claude.use('db').then(function(db){
+      dbApi = db;
+      if(!db) return;
+      db.collection('checkins').onSnapshot(function(snap){
+        var next = {};
+        snap.docs.forEach(function(doc){
+          var data = doc.data();
+          if(data) next[doc.id] = data;
+        });
+        checkins = next;
+        renderAll();
+      }, function(err){
+        showToast('Live sync lost (' + (err && err.code || 'error') + ') — reload to reconnect');
+      });
+    });
+    window.claude.use('user').then(function(u){ userApi = u; });
+    window.claude.use('downloads').then(function(d){ downloadsApi = d; });
+  }
+
+  if(window.claude && window.claude.hot){
+    window.claude.hot.ready ? window.claude.hot.ready(boot) : boot();
+  } else {
+    boot();
+  }
+})();
+</script>
+
+</body></html>
