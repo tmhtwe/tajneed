@@ -1,8 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF7F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10171A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
 <title>Ijtema Attendance Report</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
+  /* ---- Cross-device base: iOS Safari + Android Chrome + laptop ---- */
+  html{-webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-tap-highlight-color:transparent;}
+  body{padding-inline:max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    padding-bottom:env(safe-area-inset-bottom); font-size:clamp(15px, 0.9vw + 11px, 19px);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;}
+  button, input, select{touch-action:manipulation; -webkit-appearance:none; appearance:none;}
+  input, select, textarea{font-size:max(16px, 1em);} /* stops iOS zoom-on-focus */
+  select{background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size:5px 5px; background-repeat:no-repeat; padding-right:30px;}
+
   /* Layout concept: read-only companion to the check-in page — same visual
      language, no Register tab, no mark-present controls. Meant for a
      separate, unlisted URL shared only with people who need the numbers. */
@@ -93,14 +112,50 @@
   @media (max-width:480px){
     header h1{font-size:1.3rem;}
     .hero-report .big{font-size:2.4rem;}
-    .splitrow{flex-direction:column;}
+  }
+
+  .wrap{max-width:min(1100px, 100%);}
+  header h1{font-size:clamp(1.5rem, 1rem + 2vw, 2.6rem);}
+  header .sub{font-size:clamp(0.9rem, 0.8rem + 0.4vw, 1.15rem);}
+  .hero-report .big{font-size:clamp(2.6rem, 2rem + 3vw, 5rem);}
+  .hero-report .lbl{font-size:clamp(0.95rem, 0.85rem + 0.5vw, 1.3rem);}
+  .hero-report .ring-row{font-size:clamp(0.85rem, 0.8rem + 0.3vw, 1.1rem);}
+  .hero-report .ring-row b{font-size:clamp(1.1rem, 1rem + 0.6vw, 1.6rem);}
+  .rcard h3{font-size:clamp(1.05rem, 0.95rem + 0.5vw, 1.4rem);}
+  .splitrow .val{font-size:clamp(1.4rem, 1.1rem + 1vw, 2.2rem);}
+  .splitrow .lbl, .splitrow .sub{font-size:clamp(0.75rem, 0.7rem + 0.3vw, 1rem);}
+  table.mtable{font-size:clamp(0.88rem, 0.8rem + 0.35vw, 1.15rem);}
+  table.mtable th{font-size:clamp(0.72rem, 0.68rem + 0.25vw, 0.9rem);}
+  .exportbtn{min-height:48px; font-size:max(15px, 0.95rem);}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom)); max-width:calc(100vw - 32px); text-align:center;}
+  @media (min-width:900px){ .report-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:start;} .report-grid .rcard{margin-top:14px;} }
+
+  /* Old layout, tuned for phones: Saff block, then Majlis block (stacked, full width) */
+  .splitrow{display:flex; flex-direction:row; gap:10px;}
+  .splitrow > div{flex:1 1 0; padding:clamp(10px, 2.5vw, 18px);}
+  .splitrow .val{font-size:clamp(1.25rem, 1rem + 1.6vw, 2.2rem); white-space:nowrap;}
+  table.mtable th, table.mtable td{padding:clamp(8px, 1.6vw, 14px) 4px;}
+  .barcol{width:30%;}
+  .barrow{display:none;}
+  table.mtable tr.barrow td{border-bottom:1px solid var(--line); padding:0 4px 10px;}
+  .mbar-wrap{height:8px;}
+  @media (max-width:480px){
+    .rcard{padding:14px;}
+    .splitrow .lbl{font-size:0.7rem;}
+    table.mtable th{font-size:0.66rem; letter-spacing:0;}
+    table.mtable th.num, table.mtable td.num{padding-inline:3px;}
+    .barcol{display:none;}
+    .barrow{display:table-row;}
+    table.mtable tbody tr:not(.barrow) td{border-bottom:none; padding-bottom:6px;}
   }
 </style>
 
+</head>
+<body>
 <div class="wrap">
   <header>
     <h1>Ijtema Attendance Report</h1>
-    <div class="sub">Regional Ijtema — Upper North Island<br><b>Auckland Majalis &amp; Waikato</b> · 10 October 2026</div>
+    <div class="sub">Regional Ijtema — Upper North Island<br><b>Auckland Majalis &amp; Waikato</b> · 9 October 2026</div>
   </header>
 
   <div id="reportView">
@@ -134,7 +189,7 @@
       <h3>By Majlis</h3>
       <div class="tblwrap">
         <table class="mtable">
-          <thead><tr><th>Majlis</th><th class="num">Present</th><th class="num">Expected</th><th class="num">%</th><th style="width:30%"></th></tr></thead>
+          <thead><tr><th>Majlis</th><th class="num">Present</th><th class="num">Expected</th><th class="num">%</th><th class="barcol"></th></tr></thead>
           <tbody id="majlisReportBody"></tbody>
         </table>
       </div>
@@ -182,8 +237,8 @@
   // ---------- Report ----------
   function computeReport(){
     var presentCount = 0, awwalP=0, awwalT=0, domP=0, domT=0, musiP=0;
-    var byMajlis = {};
-    MAJLIS_ORDER.forEach(function(mj){ byMajlis[mj] = {total:0, present:0}; });
+    var byMajlis = {}, bySaff = {A:{}, D:{}};
+    MAJLIS_ORDER.forEach(function(mj){ byMajlis[mj] = {total:0, present:0}; bySaff.A[mj]={total:0,present:0}; bySaff.D[mj]={total:0,present:0}; });
     ROSTER.forEach(function(m){
       var ci = checkins[m.c];
       var present = !!(ci && ci.present);
@@ -192,8 +247,10 @@
       if(m.u && present) musiP++;
       byMajlis[m.m].total++;
       if(present) byMajlis[m.m].present++;
+      var sg = bySaff[m.s === 'A' ? 'A' : 'D'][m.m];
+      sg.total++; if(present) sg.present++;
     });
-    return {presentCount:presentCount, awwalP:awwalP, awwalT:awwalT, domP:domP, domT:domT, musiP:musiP, byMajlis:byMajlis};
+    return {bySaff:bySaff, presentCount:presentCount, awwalP:awwalP, awwalT:awwalT, domP:domP, domT:domT, musiP:musiP, byMajlis:byMajlis};
   }
 
   function pct(n,d){ return d ? Math.round(n/d*100) + '%' : '—'; }
@@ -211,14 +268,14 @@
     document.getElementById('saffDomSub').textContent = pct(r.domP, r.domT) + ' checked in';
 
     var tbody = document.getElementById('majlisReportBody');
-    var rowsHtml = MAJLIS_ORDER.map(function(mj){
+    tbody.innerHTML = MAJLIS_ORDER.map(function(mj){
       var d = r.byMajlis[mj];
       var p = d.total ? (d.present/d.total*100) : 0;
       return '<tr><td>' + mj + '</td><td class="num">' + d.present + '</td><td class="num">' + d.total +
         '</td><td class="num">' + pct(d.present, d.total) + '</td>' +
-        '<td><div class="mbar-wrap"><div class="mbar" style="width:' + p + '%"></div></div></td></tr>';
+        '<td class="barcol"><div class="mbar-wrap"><div class="mbar" style="width:' + p + '%"></div></div></td></tr>' +
+        '<tr class="barrow"><td colspan="4"><div class="mbar-wrap"><div class="mbar" style="width:' + p + '%"></div></div></td></tr>';
     }).join('');
-    tbody.innerHTML = rowsHtml;
   }
 
   // ---------- CSV export ----------
@@ -262,11 +319,18 @@
       ['Saff-e-Dom', r.domP, r.domT, pct(r.domP, r.domT)],
       ['Musi (present)', r.musiP, '', ''],
       [],
-      ['Majlis','Present','Expected','Percent']
+      ['Saff','Majlis','Present','Expected','Percent']
     ];
+    [['Saff-e-Awwal','A'],['Saff-e-Dom','D']].forEach(function(sf){
+      MAJLIS_ORDER.forEach(function(mj){
+        var d = r.bySaff[sf[1]][mj];
+        rows.push([sf[0], mj, d.present, d.total, pct(d.present, d.total)]);
+      });
+    });
+    rows.push([]); rows.push(['Majlis (all Saff)','','Present','Expected','Percent']);
     MAJLIS_ORDER.forEach(function(mj){
       var d = r.byMajlis[mj];
-      rows.push([mj, d.present, d.total, pct(d.present, d.total)]);
+      rows.push(['', mj, d.present, d.total, pct(d.present, d.total)]);
     });
     saveCsv('ijtema-attendance-summary.csv', rows);
   });
@@ -328,3 +392,6 @@
   }
 })();
 </script>
+
+</body>
+</html>
