@@ -1,8 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF7F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10171A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
 <title>Ijtema Registration</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
+  /* ---- Cross-device base: iOS Safari + Android Chrome + laptop ---- */
+  html{-webkit-text-size-adjust:100%; text-size-adjust:100%; -webkit-tap-highlight-color:transparent;}
+  body{padding-inline:max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    padding-bottom:env(safe-area-inset-bottom); font-size:clamp(15px, 0.9vw + 11px, 19px);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;}
+  button, input, select{touch-action:manipulation; -webkit-appearance:none; appearance:none;}
+  input, select, textarea{font-size:max(16px, 1em);} /* stops iOS zoom-on-focus */
+  select{background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+    background-position:calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size:5px 5px; background-repeat:no-repeat; padding-right:30px;}
+
   /* Layout concept: a search-engine-style landing — a big centered search box
      and button is the whole page until someone searches or picks a filter;
      results then appear as a list below, with a small live counter always
@@ -148,12 +167,46 @@
        top-anchored layout instead. */
     .wrap{min-height:auto; justify-content:flex-start; padding-block:6px 16px;}
   }
+
+  /* ---- Bigger, fluid layout: phones -> tablets -> laptops ---- */
+  .wrap{max-width:min(1100px, 100%);}
+  header h1{font-size:clamp(1.5rem, 1rem + 2vw, 2.6rem);}
+  header .sub{font-size:clamp(0.9rem, 0.8rem + 0.4vw, 1.15rem);}
+  .countbar{max-width:clamp(320px, 50vw, 620px); padding:12px 18px;}
+  .countbar .num{font-size:clamp(1.3rem, 1rem + 1vw, 2rem);}
+  .countbar .of{font-size:clamp(0.85rem, 0.75rem + 0.3vw, 1.05rem);}
+  .herosearch .prompt{font-size:clamp(0.95rem, 0.85rem + 0.5vw, 1.3rem);}
+  .searchrow{max-width:clamp(300px, 70vw, 760px);}
+  .searchrow input[type=search]{padding:clamp(14px, 1.2vw + 8px, 22px) clamp(18px, 1.5vw + 10px, 28px); font-size:max(16px, clamp(1rem, 0.9rem + 0.6vw, 1.5rem));}
+  .searchbtn{min-height:48px; padding:0 clamp(22px, 2vw + 10px, 40px); font-size:max(16px, clamp(0.95rem, 0.85rem + 0.4vw, 1.3rem));}
+  .filterrow{max-width:clamp(300px, 70vw, 760px);}
+  select{min-height:44px; padding:10px 14px; font-size:max(16px, 0.9rem);}
+  .chip{min-height:44px; padding:10px 18px; font-size:max(14px, 0.9rem);}
+  #rosterCount{font-size:clamp(0.85rem, 0.8rem + 0.3vw, 1.05rem);}
+  /* results: single column on phones, 2-up on tablets/laptops (cards stay wide enough for full names) */
+  .roster{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap:12px;}
+  .roster > .landing, .roster > .emptystate{grid-column:1 / -1; font-size:clamp(0.9rem, 0.8rem + 0.4vw, 1.2rem);}
+  .row{padding:clamp(12px, 0.8vw + 8px, 18px); gap:clamp(10px, 1vw, 16px);}
+  .row .code{font-size:clamp(0.78rem, 0.7rem + 0.3vw, 1rem); padding:4px 8px;}
+  .row .who .name{font-size:clamp(1rem, 0.9rem + 0.4vw, 1.3rem); white-space:normal; overflow-wrap:anywhere;}
+  .row .who .meta{font-size:clamp(0.8rem, 0.75rem + 0.3vw, 1rem); white-space:normal; overflow:visible;}
+  .markbtn{min-height:48px; min-width:104px; font-size:max(14px, clamp(0.85rem, 0.8rem + 0.3vw, 1.1rem)); padding:10px 16px;}
+  .toast{bottom:calc(20px + env(safe-area-inset-bottom)); font-size:max(14px, 0.9rem); max-width:calc(100vw - 32px); text-align:center;}
+  /* phone-width tweaks last so they win */
+  @media (max-width:480px){
+    .row{flex-wrap:wrap;}
+    .row .who{flex:1 1 55%;}
+    .markbtn{flex:1 1 100%; padding:12px;}
+    .row .code{font-size:0.78rem; padding:3px 7px;}
+  }
 </style>
 
+</head>
+<body>
 <div class="wrap" id="pageWrap">
   <header>
     <h1>Ijtema Registration</h1>
-    <div class="sub">Regional Ijtema — Upper North Island<br><b>Auckland Majalis &amp; Waikato</b> · 10 October 2026</div>
+    <div class="sub">Regional Ijtema — Upper North Island<br><b>Auckland Majalis &amp; Waikato</b> · 9 October 2026</div>
   </header>
 
   <div class="countbar">
@@ -449,3 +502,6 @@
   }
 })();
 </script>
+
+</body>
+</html>
