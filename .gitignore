@@ -1,0 +1,6 @@
+node_modules/
+.claude/
+# Member data must only be committed encrypted (data/members.enc.json)
+*.xlsx
+*.xls
+*.csv

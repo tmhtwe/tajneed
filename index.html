@@ -330,7 +330,8 @@
 </div>
 
 <script>
-const CONFIG = { API_URL: "https://script.google.com/macros/s/AKfycby6zwJrT7SnKrsHVeOeL_nib01nBmBGtB0AjLyByYMw68v9e1CulIGzzjuds0wYoPxN/exec", REFRESH_MINUTES: 5 };
+// Member data is data/members.enc.json, encrypted with the access key (built by tools/update.js).
+const CONFIG = { DATA_URL: "data/members.enc.json", REFRESH_MINUTES: 30 };
 const EMBEDDED = null;   // null in the live build
 
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -353,7 +354,9 @@ function prepare(raw){
   const members = raw.members.map(m=>{
     const age = m.birthday ? ageFrom(m.birthday) : (m.age===''||m.age==null ? '' : Math.floor(Number(m.age)));
     const calc = m.birthday ? CURRENT_YEAR - Number(m.birthday.slice(0,4)) : (Number(m.age)||0);
-    return Object.assign({}, m, { age, musi: !!m.musi, saff: calc > 55 ? 'Saff-e-Awwal' : 'Saff-e-Dom' });
+    // A member joins Ansarullah on 1 Jan after turning 40, so this year's new Ansars were born CURRENT_YEAR-41.
+    const newThisYear = m.birthday ? Number(m.birthday.slice(0,4)) === CURRENT_YEAR-41 : !!m.newThisYear;
+    return Object.assign({}, m, { age, newThisYear, musi: !!m.musi, saff: calc > 55 ? 'Saff-e-Awwal' : 'Saff-e-Dom' });
   });
   const tobe = raw.ansarsToBe.map(m=>Object.assign({}, m, { age: m.birthday ? ageFrom(m.birthday) : m.age }));
   return { members, newAnsars: members.filter(m=>m.newThisYear), tobe };
@@ -496,19 +499,29 @@ function clearKey(){ try{ localStorage.removeItem('tajneedKey'); }catch(e){} }
 function showBanner(msg){ const b=$('banner'); b.textContent=msg; b.classList.toggle('show',!!msg); }
 function nz(iso){ return new Date(iso).toLocaleString('en-NZ',{timeZone:'Pacific/Auckland',day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}); }
 
+// ---------- decryption (same scheme as tools/update.js) ----------
+function unb64(s){ return Uint8Array.from(atob(s), c=>c.charCodeAt(0)); }
+async function decryptData(env, pass){
+  const base=await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2', salt:unb64(env.salt), iterations:env.iter, hash:'SHA-256'}, base, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(env.iv)}, key, unb64(env.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+
 async function load(fresh){
   const key=getKey();
   if(!key){ $('gate').classList.add('show'); return; }
   $('statusText').textContent='Loading…';
   try{
-    const url=CONFIG.API_URL+(CONFIG.API_URL.includes('?')?'&':'?')+'key='+encodeURIComponent(key)+(fresh?'&fresh=1':'');
-    const res=await fetch(url);
-    const raw=await res.json();
-    if(raw.error==='unauthorized'){ clearKey(); $('keyErr').textContent='That key was not accepted.'; $('gate').classList.add('show'); return; }
-    if(raw.error) throw new Error(raw.error);
-    showBanner((raw.warnings||[]).join(' '));
+    const res=await fetch(CONFIG.DATA_URL+(fresh?'?t='+Date.now():''), {cache: fresh?'no-store':'default'});
+    if(!res.ok) throw new Error('data file not found');
+    const env=await res.json();
+    let raw;
+    try{ raw=await decryptData(env, key); }
+    catch(e){ clearKey(); $('keyErr').textContent='That key was not accepted.'; $('gate').classList.add('show'); $('statusText').textContent='Not connected'; return; }
+    showBanner('');
     render(raw);
-    $('statusText').textContent='Live from Google Drive: '+raw.source+', saved '+nz(raw.updated);
+    $('statusText').textContent='Data: '+raw.source+', updated '+nz(raw.updated);
   }catch(err){
     showBanner('Could not load the latest data ('+err.message+'). Showing what was loaded last, if anything. Try Refresh.');
     $('statusText').textContent='Not connected';
@@ -523,7 +536,6 @@ function start(){
     $('refreshBtn').style.display='none';
     return;
   }
-  if(!CONFIG.API_URL || CONFIG.API_URL.indexOf('__')===0){ showBanner('Set API_URL at the top of the script in index.html to your Apps Script web app URL.'); $('statusText').textContent='Not connected'; return; }
   if(location.hash.indexOf('#key=')===0){ setKey(decodeURIComponent(location.hash.slice(5))); history.replaceState(null,'',location.pathname+location.search); }
   $('keyBtn').addEventListener('click',()=>{ const v=$('keyInput').value.trim(); if(!v) return; setKey(v); $('keyErr').textContent=''; $('gate').classList.remove('show'); load(true); });
   $('keyInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('keyBtn').click(); });

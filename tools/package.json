@@ -1,0 +1,8 @@
+{
+  "name": "tajneed-tools",
+  "private": true,
+  "description": "Rebuilds data/members.enc.json from a MembersGroupedByJamaat Excel export",
+  "dependencies": {
+    "xlsx": "0.18.5"
+  }
+}
